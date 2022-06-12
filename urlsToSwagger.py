@@ -28,10 +28,10 @@ def getAPIList(urlFile,delimiter,isUrlWithProtocol):
 		line = line.split(delimiter,1)
 		httpMethod = line[0].strip().lower()
 		if isUrlWithProtocol:
-			apiPath = "/" + line[1].strip().split("/",3)[3]  #If format: http://test.com/api/v2/sayHello
+			apiPath = "/" + line[1].strip().split("/",3)[3]   #If format: http://test.com/api/v2/sayHello
 		else:
 			apiPath = line[1].strip().lower()                  #If format: /api/v2/sayHello
-		API_List.append((httpMethod,apiPath))              #APIList = [(GET,/api/v2/sayHello)]
+		API_List.append((httpMethod,apiPath))                      #APIList = [(GET,/api/v2/sayHello)]
 	
 	return API_List
 
@@ -53,9 +53,9 @@ def saveOutput(swaggerJson,outputDir):
 
 def main():
 	#Hardcode these or Pass as Arguments	
-	inputFile = "unauthForPostman"
-	title = "vRLI_Unauthenticated"
-	host = "10.126.59.48"            #Without Https
+	inputFile = "urls.txt"
+	title = "MyProject_APIs"
+	host = "x.x.x.x"            #Without Https
 	protocol = "https"
 	outputDir = "swagger-007.json"
 	verbose = True
