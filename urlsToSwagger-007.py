@@ -18,8 +18,13 @@ def getArguments():
 	return args
 
 def getAPIList(urlFile,delimiter,isUrlWithProtocol):
-	with open(urlFile, "r") as file:
-		lines = file.readlines()
+	try:
+		with open(urlFile, "r") as file:
+			lines = file.readlines()
+	except FileNotFoundError:
+		print(colored("[-]Input File Not Found:","red"),urlFile)
+		exit(0)
+
 
 	API_List = []
 	for line in lines:                                     #FileFormat: HttpMethod:URL
