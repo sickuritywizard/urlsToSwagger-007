@@ -6,26 +6,31 @@ from termcolor import colored
 
 def getArguments():
 	parser = argparse.ArgumentParser("Converts List Of URLS to Swagger 2.0 Format")
-	parser.add_argument('-i','--input',dest='inputFile',help="File Having list of URL with its HttpMethod")
+	parser.add_argument('-i','--input',dest='inputFile',help="File Having list of URL with its HttpMethod (METHOD:URL)")
 	parser.add_argument('-t','--title',dest='title',help="Postman Collection Title")
 	parser.add_argument('-u','--host',dest='host',help="HostName Without http/https")
-	parser.add_argument('-p','--protocol',dest='protocol',help="Protocol/Scheme [http or https]")
+	parser.add_argument('-f','--fullUrl',dest='isUrlWithProtocol',action='store_true',help="If URL includes protocol (Ex: http://test.com/api/ping)")
+	parser.add_argument('-d','--delimiter',dest='delimiter',help="Delimiter (Default: colon)")
+	parser.add_argument('-p','--protocol',dest='protocol',help="Protocol/Scheme [Default: https]")
 	parser.add_argument('-o','--output',dest='outputDir',help="Output Filename")
 	parser.add_argument('-v','--verbose',dest='verbose',action='store_true',help="Don't Print on Terminal [Default: False]")
 	args = parser.parse_args()
 	return args
 
-def getAPIList(urlFile):
+def getAPIList(urlFile,delimiter,isUrlWithProtocol):
 	with open(urlFile, "r") as file:
 		lines = file.readlines()
 
-	#Modify Logic Here
 	API_List = []
 	for line in lines:                                     #FileFormat: HttpMethod:URL
-		line = line.split(":",1)
+
+		#Modify Logic Here
+		line = line.split(delimiter,1)
 		httpMethod = line[0].strip().lower()
-		apiPath = line[1].strip().lower()                  #If format: /api/v2/sayHello
-		# apiPath = "/" + line[1].strip().split("/",3)[3]  #If format: http://test.com/api/v2/sayHello
+		if isUrlWithProtocol:
+			apiPath = "/" + line[1].strip().split("/",3)[3]  #If format: http://test.com/api/v2/sayHello
+		else:
+			apiPath = line[1].strip().lower()                  #If format: /api/v2/sayHello
 		API_List.append((httpMethod,apiPath))              #APIList = [(GET,/api/v2/sayHello)]
 	
 	return API_List
@@ -47,13 +52,14 @@ def saveOutput(swaggerJson,outputDir):
 
 
 def main():
-	#Hardcode or Pass Arguments	
+	#Hardcode these or Pass as Arguments	
 	inputFile = "unauthForPostman"
 	title = "vRLI_Unauthenticated"
 	host = "10.126.59.48"            #Without Https
 	protocol = "https"
 	outputDir = "swagger-007.json"
 	verbose = True
+	delimiter = ":"
 
 	args = getArguments()
 	if args.inputFile:
@@ -63,25 +69,27 @@ def main():
 	if args.host:
 		host = args.host
 	if args.protocol:
-		inputFile = args.protocol
+		protocol = args.protocol
 	if args.outputDir:
 		outputDir = args.outputDir
 	if args.verbose:
 		verbose = False
+	if args.delimiter:
+		delimiter=args.delimiter
+	isUrlWithProtocol = args.isUrlWithProtocol or False
+
 
 	if os.path.exists(outputDir):
 		print(colored("[-] File Already Exists: "+ outputDir,"red"))
 		exit(0)
 
-	API_List = getAPIList(inputFile)
+	API_List = getAPIList(inputFile,delimiter,isUrlWithProtocol)
 	swaggerJson = convertToSwagger(API_List,title,host,protocol)
 	saveOutput(swaggerJson,outputDir)
-	print(colored("[-]Output Saved To: "+ outputDir,"cyan"))	
+	print(colored("[-]Output Saved To: "+ outputDir,"cyan"))
 
 	if verbose:
-		print(colored("[-]Swagger 2.0 \n","yellow") + swaggerJson)	
-
-		# print("|SWAGGER 2.0|\n" + swaggerJson)
+		print(colored("[-]Swagger 2.0 \n","yellow") + swaggerJson)
 
 if __name__ == '__main__':
 	main()
